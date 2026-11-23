@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en-NG">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AjoCircle – Rotating Savings</title>
+<meta name="theme-color" content="#0f7a4f">
+<meta name="description" content="AjoCircle: run your Ajo / Esusu savings group in Nigeria. Track contributions in naira, confirm bank transfers and invite members on WhatsApp.">
+<style>
+:root{--bg:#f4f7f5;--card:#fff;--tx:#14231c;--mu:#5d6f66;--pr:#0f7a4f;--pr2:#e3f4ec;--bd:#d9e4de;--wa:#1faa59;--rd:#c0392b;--am:#b7791f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1612;--card:#17231d;--tx:#e8f1ec;--mu:#93a79c;--pr:#3fcf90;--pr2:#1d3a2d;--bd:#27392f;--rd:#ff7b6b;--am:#f0b95a}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.45}
+.w{max-width:720px;margin:0 auto;padding:14px}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:1.3rem;margin:0;color:var(--pr)}h2{font-size:1.05rem;margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.hero{background:var(--pr);color:#fff;border-radius:14px;padding:16px;margin-bottom:12px}
+.hero p{margin:4px 0 0;opacity:.92}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:9px 13px;background:var(--pr);color:#fff;font-weight:600}
+button.g{background:var(--pr2);color:var(--pr)}button.wa{background:var(--wa)}button.r{background:transparent;color:var(--rd);padding:6px 9px}
+input,select,textarea{font:inherit;width:100%;padding:9px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);margin:3px 0 8px}
+label{font-size:.8rem;color:var(--mu)}
+.seg{display:flex;background:var(--pr2);border-radius:10px;padding:3px}
+.seg button{background:transparent;color:var(--pr);padding:7px 12px}.seg button.on{background:var(--pr);color:#fff}
+.row{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--bd)}
+.row:first-of-type{border-top:0}.row .n{flex:1;min-width:0}.row b{display:block;overflow:hidden;text-overflow:ellipsis}
+.sl{width:28px;height:28px;border-radius:50%;background:var(--pr2);color:var(--pr);display:grid;place-items:center;font-weight:700;font-size:.85rem;flex:none}
+.tag{font-size:.72rem;padding:2px 8px;border-radius:99px;font-weight:700}
+.p{background:var(--pr2);color:var(--pr)}.u{background:rgba(192,57,43,.12);color:var(--rd)}.c{background:rgba(183,121,31,.15);color:var(--am)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mu{color:var(--mu);font-size:.85rem}
+.bar{height:8px;background:var(--pr2);border-radius:9px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--pr)}
+.acct{background:var(--pr2);border-radius:10px;padding:10px;margin-top:6px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.flag{height:6px;background:linear-gradient(90deg,#008751 33%,#fff 33% 66%,#008751 66%);border-radius:6px;margin-bottom:12px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.steps div{background:var(--pr2);border-radius:10px;padding:8px;font-size:.8rem;text-align:center}.steps b{display:block;font-size:1.2rem;color:var(--pr)}
+:root[data-theme="dark"]{--bg:#0e1612;--card:#17231d;--tx:#e8f1ec;--mu:#93a79c;--pr:#3fcf90;--pr2:#1d3a2d;--bd:#27392f;--rd:#ff7b6b;--am:#f0b95a}
+.sw{width:34px;height:34px;border-radius:50%;border:2px solid var(--bd);padding:0}
+.ban{background:rgba(192,57,43,.12);color:var(--rd);border-radius:12px;padding:10px;margin-bottom:12px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="w">
+<header>
+ <h1>🤝 AjoCircle</h1>
+ <div class="acts">
+  <button class="g" id="th">🌙 Dark</button>
+  <button class="g" id="inst" hidden>Install App</button>
+  <div class="seg"><button id="bm">Member</button><button id="ba">Admin</button></div>
+ </div>
+</header>
+<div class="flag"></div>
+<div id="app"></div>
+<p class="mu" style="text-align:center">Demo build: data is saved on this device only.</p>
+</div>
+<script>
+var KEY='ajocircle_v1',S,admin=false,dp;
+var BK=['GTBank','Access Bank','Zenith Bank','UBA','First Bank','Opay','PalmPay','Kuda','Moniepoint','Fidelity Bank','Sterling Bank','Union Bank','Wema Bank','Stanbic IBTC','FCMB','Polaris Bank'];
+var FEE=2000,PLAT={bank:'Opay',no:'0000000000',name:'AjoCircle'},OWN='2349131601266',CODE='AJO2000';
+function def(){return{cur:0,groups:[{id:1,name:'Family Ajo',amount:20000,freq:'Monthly',cycle:1,bank:'GTBank',no:'0123456789',acct:'Collector Name',rules:'Pay before the 5th of each month.\nLate payers move down the rotation.\nNo collecting before your slot.',members:[{n:'Ade',paid:false},{n:'Bisi',paid:false},{n:'Chidi',paid:false}],proofs:[]}]}}
+function load(){try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!S||!S.groups)S=def()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function E(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function N(x){return '₦'+Number(x).toLocaleString()}
+function G(){return S.groups[S.cur]}
+function link(){return location.href.split('#')[0]+'#join-'+G().id}
+function render(){
+ var me='';try{me=localStorage.getItem('ajo_me')||''}catch(e){}var g=G(),m=g.members,L=m.length,paid=m.filter(function(x){return x.paid}).length,pct=L?Math.round(paid/L*100):0,col=L?m[(g.cycle-1)%L].n:'—';
+ document.getElementById('bm').className=admin?'':'on';document.getElementById('ba').className=admin?'on':'';
+ var h='<div class="hero"><span style="opacity:.85">Welcome 👋 Ẹ káàbọ̀</span><br><b>'+E(g.name)+'</b><p>'+N(g.amount)+' · '+E(g.freq)+' · Cycle '+g.cycle+'</p><p>Collecting this cycle: <b>'+E(col)+'</b> · Pot: '+N(g.amount*L)+'</p><div class="bar"><i style="width:'+pct+'%"></i></div><p>'+paid+' of '+L+' paid</p></div><div class="steps"><div><b>1</b>Send your Ajo money to the collector</div><div><b>2</b>Enter your reference and tap Pay</div><div><b>3</b>Admin confirms. When your turn comes, you collect!</div></div>'+(function(){var x=m.find(function(y){return y.n==me});return x&&!x.paid&&!admin?'<div class="ban">⏰ '+E(me)+', your '+N(g.amount)+' is not paid yet. Please pay today so the rotation stays on time.</div>':''})()+'<div style="height:12px"></div>';
+ if(S.groups.length>1||admin){h+='<div class="card"><label>Group</label><select id="gs">'+S.groups.map(function(x,i){return'<option value="'+i+'"'+(i==S.cur?' selected':'')+'>'+E(x.name)+'</option>'}).join('')+'</select>'+(admin?'<div class="acts"><button class="g" id="ng">+ New circle (₦2,000 fee)</button></div>':'')+'</div>'}
+ if(g.act===false){h+=pendingCard(g);$('app').innerHTML=h;wire();return}
+ h+='<div class="card"><h2>Rotation schedule</h2>'+(L?'':'<p class="mu">No members yet.</p>');
+ m.forEach(function(x,i){var isC=i==(g.cycle-1)%L;h+='<div class="row"><span class="sl">'+(i+1)+'</span><span class="n"><b>'+E(x.n)+'</b>'+(admin&&x.ph?'<span class="mu">'+E(x.ph)+'</span>':'')+(isC?'<span class="tag c">Collects now</span> ':'')+'<span class="tag '+(x.paid?'p':'u')+'">'+(x.paid?'Paid':'Unpaid')+'</span></span>'+(admin&&!x.paid&&x.ph?'<button class="wa" data-r="'+i+'" title="Remind on WhatsApp">💬</button>':'')+(admin?'<button class="g" data-t="'+i+'" title="Toggle paid">✅</button><button class="g" data-d="'+i+'" title="Demote">↓</button><button class="r" data-x="'+i+'">✕</button>':'')+'</div>'});
+ h+=(admin?'<div class="g2" style="margin-top:10px"><input id="nm" placeholder="Member name"><input id="np" type="tel" placeholder="Phone e.g. 0803 123 4567"><button id="am" style="grid-column:1/-1">Add member</button></div><button class="g" id="adv">Next cycle ▶ (resets payments)</button><button class="wa" id="bc" style="margin-top:8px">📣 Remind all unpaid (WhatsApp group)</button>':'')+'</div>';
+ h+='<div class="card"><h2>Pay &amp; Mark Now</h2><label>Your name</label><select id="pn">'+m.map(function(x){return'<option'+(x.n==me?' selected':'')+'>'+E(x.n)+'</option>'}).join('')+'</select><label>Transfer / card payment reference</label><input id="pr" placeholder="e.g. TRF-839201"><button id="pay">Pay &amp; Mark Now</button><div class="acct"><b>Send '+N(g.amount)+' to:</b><br>'+E(g.bank)+' · '+E(g.no)+'<br>'+E(g.acct)+'<br><button class="g" id="ca" style="margin-top:8px">Copy account number</button></div><button class="g" id="rm" style="margin-top:10px;width:100%">🔔 Remind me every day to pay</button><p class="mu" style="margin:6px 0 0">Adds a daily 8am reminder to your phone calendar.</p></div>';
+ if(admin){h+='<div class="card"><h2>Incoming Payment Proofs</h2>';var pe=g.proofs.filter(function(p){return!p.ok});h+=pe.length?'':'<p class="mu">No pending proofs.</p>';g.proofs.forEach(function(p,i){if(!p.ok)h+='<div class="row"><span class="n"><b>'+E(p.name)+'</b><span class="mu">Ref: '+E(p.ref)+'</span></span><button data-v="'+i+'">✅ Confirm</button></div>'});h+='</div>'}
+ if(admin)h+='<div class="card"><h2>App colour</h2><p class="mu" style="margin:0 0 8px">Only admin can change this.</p><div class="acts">'+COL.map(function(c){return'<button class="sw" data-c="'+c+'" style="background:'+c+'"></button>'}).join('')+'<input type="color" id="cc" value="'+(S.color||'#0f7a4f')+'" style="width:44px;height:34px;padding:2px"></div></div>';
+ h+='<div class="card"><h2>Rules</h2>'+(admin?'<textarea id="ru" rows="4">'+E(g.rules)+'</textarea><div class="g2"><div><label>Group name</label><input id="gn" value="'+E(g.name)+'"></div><div><label>Amount (₦)</label><input id="ga" type="number" value="'+g.amount+'"></div><div><label>Frequency</label><select id="gf">'+['Daily','Weekly','Monthly'].map(function(f){return'<option'+(f==g.freq?' selected':'')+'>'+f+'</option>'}).join('')+'</select></div><div><label>Bank</label><select id="gb">'+BK.map(function(b){return'<option'+(b==g.bank?' selected':'')+'>'+b+'</option>'}).join('')+'</select></div><div><label>Account number</label><input id="gc" value="'+E(g.no)+'"></div><div><label>Account name</label><input id="gd" value="'+E(g.acct)+'"></div></div><button id="sv">Save changes</button>':'<p style="white-space:pre-line;margin:0">'+E(g.rules)+'</p>')+'</div>';
+ h+='<div class="card"><h2>Invite friends</h2><input id="lk" readonly value="'+E(link())+'"><div class="acts"><button class="g" id="cp">Copy link</button><button class="wa" id="wa">Share on WhatsApp</button><button class="g" id="sh">Share…</button></div></div>';
+ document.getElementById('app').innerHTML=h;wire();
+}
+function $(i){return document.getElementById(i)}
+function wire(){
+ if(G().act===false){wirePending();return}
+ var g=G();
+ document.querySelectorAll('[data-t]').forEach(function(b){b.onclick=function(){var x=g.members[+b.dataset.t];x.paid=!x.paid;save();render()}});
+ document.querySelectorAll('[data-d]').forEach(function(b){b.onclick=function(){var i=+b.dataset.d;if(i<g.members.length-1){var t=g.members[i];g.members[i]=g.members[i+1];g.members[i+1]=t;save();render()}}});
+ document.querySelectorAll('[data-x]').forEach(function(b){b.onclick=function(){if(confirm('Remove this member?')){g.members.splice(+b.dataset.x,1);save();render()}}});
+ document.querySelectorAll('[data-v]').forEach(function(b){b.onclick=function(){var p=g.proofs[+b.dataset.v];p.ok=true;var x=g.members.find(function(y){return y.n==p.name});if(x)x.paid=true;save();render()}});
+ document.querySelectorAll('[data-c]').forEach(function(b){b.onclick=function(){S.color=b.dataset.c;save();applyColor();render()}});if($('cc'))$('cc').oninput=function(){S.color=this.value;save();applyColor()};
+ document.querySelectorAll('[data-r]').forEach(function(b){b.onclick=function(){var x=g.members[+b.dataset.r],p=x.ph.replace(/\D/g,'');if(p.charAt(0)=='0')p='234'+p.slice(1);window.open('https://wa.me/'+p+'?text='+encodeURIComponent('Hello '+x.n+', gentle reminder: your '+N(g.amount)+' Ajo contribution for “'+g.name+'” is due. Please pay to '+g.bank+' '+g.no+' ('+g.acct+') and send your reference. Thank you 🙏'),'_blank')}});
+ if($('gs'))$('gs').onchange=selGroup;
+ if($('ng'))$('ng').onclick=newGroup;
+ if($('am'))$('am').onclick=function(){var v=$('nm').value.trim();if(v){g.members.push({n:v,ph:$('np').value.trim(),paid:false});save();render()}};
+ if($('adv'))$('adv').onclick=function(){if(confirm('Start next cycle?')){g.cycle++;g.members.forEach(function(x){x.paid=false});save();render()}};
+ $('pn').onchange=function(){try{localStorage.setItem('ajo_me',this.value)}catch(e){}render()};
+ $('rm').onclick=function(){var n=$('pn').value;try{localStorage.setItem('ajo_me',n)}catch(e){}var d=new Date(Date.now()+864e5),p=function(x){return('0'+x).slice(-2)},ds=d.getFullYear()+p(d.getMonth()+1)+p(d.getDate());window.open('https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Pay Ajo '+N(g.amount)+' – '+g.name)+'&dates='+ds+'T080000/'+ds+'T081500&recur='+encodeURIComponent('RRULE:FREQ=DAILY')+'&details='+encodeURIComponent('Send '+N(g.amount)+' to '+g.bank+' '+g.no+' ('+g.acct+'), then open '+link()+' and tap Pay & Mark Now.'),'_blank');render()};
+ if($('bc'))$('bc').onclick=function(){var u=g.members.filter(function(x){return!x.paid}).map(function(x){return x.n});if(!u.length){alert('Everyone has paid 🎉');return}window.open('https://wa.me/?text='+encodeURIComponent('⏰ Ajo reminder “'+g.name+'”: '+u.join(', ')+' – please pay '+N(g.amount)+' today to '+g.bank+' '+g.no+' ('+g.acct+'). Open '+link()+' and tap Pay & Mark Now. Thank you 🙏'),'_blank')};
+ $('ca').onclick=function(){try{navigator.clipboard.writeText(g.no)}catch(e){}this.textContent='Copied ✓'};
+ $('pay').onclick=function(){var r=$('pr').value.trim(),n=$('pn').value;if(!n||!r){alert('Pick your name and enter a payment reference.');return}var x=g.members.find(function(y){return y.n==n});if(x)x.paid=true;g.proofs.push({name:n,ref:r,ok:false});save();render();alert('Marked as paid. The admin will confirm your payment.')};
+ if($('sv'))$('sv').onclick=function(){g.rules=$('ru').value;g.name=$('gn').value||g.name;g.amount=+$('ga').value||g.amount;g.freq=$('gf').value;g.bank=$('gb').value;g.no=$('gc').value;g.acct=$('gd').value;save();render()};
+ var msg='Join our Ajo group “'+g.name+'” – '+N(g.amount)+' '+g.freq.toLowerCase()+'. Tap to join: '+link();
+ $('cp').onclick=function(){$('lk').select();try{navigator.clipboard.writeText(link())}catch(e){document.execCommand('copy')}this.textContent='Copied ✓'};
+ $('wa').onclick=function(){window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank')};
+ $('sh').onclick=function(){if(navigator.share)navigator.share({title:g.name,text:msg,url:link()}).catch(function(){});else $('cp').click()};
+}
+function newGroup(){var n=prompt('Circle name?');if(n){S.groups.push({id:Date.now(),name:n,amount:10000,freq:'Monthly',cycle:1,bank:'GTBank',no:'0000000000',acct:'Collector Name',rules:'Add your rules here.',members:[],proofs:[],act:false});S.cur=S.groups.length-1;save();render()}}
+function selGroup(){S.cur=+this.value;save();render()}
+function pendingCard(g){return '<div class="card"><h2>🔒 Activate this circle</h2>'+(admin?'<p class="mu">Registration fee: <b>'+N(FEE)+'</b> per circle. Pay to the account below, send your proof on WhatsApp, then enter the activation code you receive.</p><div class="acct"><b>'+N(FEE)+' to:</b><br>'+E(PLAT.bank)+' · '+E(PLAT.no)+'<br>'+E(PLAT.name)+'</div><input id="ar" placeholder="Payment reference" style="margin-top:10px"><button class="wa" id="aw">Send proof on WhatsApp</button><input id="ac" placeholder="Activation code" style="margin-top:10px"><button id="ak">Activate circle</button>':'<p class="mu">This circle is waiting for its admin to finish registration. Please check back soon.</p>')+'</div>'}
+function wirePending(){var g=G();if($('gs'))$('gs').onchange=selGroup;if($('ng'))$('ng').onclick=newGroup;if($('aw'))$('aw').onclick=function(){var r=$('ar').value.trim();if(!r){alert('Enter your payment reference first.');return}window.open('https://wa.me/'+OWN+'?text='+encodeURIComponent('Hello, I paid '+N(FEE)+' to register my Ajo circle “'+g.name+'”. Reference: '+r+'. Please send my activation code.'),'_blank')};if($('ak'))$('ak').onclick=function(){if($('ac').value.trim().toUpperCase()==CODE){g.act=true;save();render()}else alert('Wrong code. Please check and try again.')}}
+var COL=['#0f7a4f','#1565c0','#6a1b9a','#c2185b','#e65100','#00838f','#37474f'];
+function curTheme(){var t=document.documentElement.dataset.theme;return t||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}
+function applyColor(){var r=document.documentElement.style;if(S.color){var c=curTheme()=='dark'?'color-mix(in srgb,'+S.color+' 60%,white)':S.color;r.setProperty('--pr',c);r.setProperty('--pr2','color-mix(in srgb,'+c+' 15%,transparent)')}}
+function applyTheme(){var t='';try{t=localStorage.getItem('ajo_theme')||''}catch(e){}if(t)document.documentElement.dataset.theme=t;$('th').textContent=curTheme()=='dark'?'☀️ Light':'🌙 Dark';applyColor()}
+$('th').onclick=function(){var t=curTheme()=='dark'?'light':'dark';document.documentElement.dataset.theme=t;try{localStorage.setItem('ajo_theme',t)}catch(e){}applyTheme()};
+$('bm').onclick=function(){admin=false;render()};
+$('ba').onclick=function(){admin=true;render()};
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;$('inst').hidden=false});
+$('inst').onclick=function(){if(dp){dp.prompt();dp=null;$('inst').hidden=true}};
+(function(){try{var ic='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0f7a4f"/><text x="50" y="66" font-size="52" text-anchor="middle" fill="#fff">A</text></svg>');var mf={name:'AjoCircle',short_name:'Ajo',display:'standalone',background_color:'#0f7a4f',theme_color:'#0f7a4f',start_url:location.href,icons:[{src:ic,sizes:'any',type:'image/svg+xml'}]};var l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));document.head.appendChild(l)}catch(e){}})();
+load();applyTheme();render();
+</script>
+</body>
+</html>
